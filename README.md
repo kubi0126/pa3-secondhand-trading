@@ -21,6 +21,7 @@ pa3/
 - UML：13 对 png/puml，已从实验二复制。
 - 文档：`docs/` 下四份事实材料 + 17 页截图。
 - 报告：`report/report.html` 为骨架，正文需本人按课程要求撰写。
+- 收尾排期与验收清单：`docs/implementation_plan.md`。
 
 ## 快速开始
 
