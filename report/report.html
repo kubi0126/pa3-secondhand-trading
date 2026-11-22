@@ -199,14 +199,14 @@ class Item:
   <tr><th>包</th><th>文件数</th><th>物理行</th><th>代码行（非空非注释）</th></tr>
   <tr><td>domain</td><td>5</td><td>608</td><td>503</td></tr>
   <tr><td>repositories</td><td>9</td><td>954</td><td>825</td></tr>
-  <tr><td>services</td><td>10</td><td>1103</td><td>956</td></tr>
+  <tr><td>services</td><td>10</td><td>1106</td><td>959</td></tr>
   <tr><td>web</td><td>9</td><td>925</td><td>772</td></tr>
   <tr><td>应用基础（config/db/seed/cli 等）</td><td>8</td><td>561</td><td>444</td></tr>
-  <tr><th>合计</th><th>41</th><th>4151</th><th>3500</th></tr>
+  <tr><th>合计</th><th>41</th><th>4154</th><th>3503</th></tr>
 </table>
 <p class="note">口径：<code>python tools/count_loc.py</code>；不含测试、Jinja 模板、CSS 与构建产物；Jinja 模板 1044 行、CSS 496 行另计。</p>
 <div class="todo">
-【本人撰写，约 120 字】说明 3500 行是手写业务代码，已超过 1500 行要求；如果按“物理行”口径是 4151 行；模板/CSS 不计入门槛。
+【本人撰写，约 120 字】说明 3503 行是手写业务代码，已超过 1500 行要求；如果按“物理行”口径是 4154 行；模板/CSS 不计入门槛。
 </div>
 
 <h2 class="pb">3 关键实现</h2>
@@ -334,7 +334,7 @@ python -m secondhand
   <tr><td><code>python -m pytest -q</code></td><td>75 passed in 8.58s</td></tr>
   <tr><td><code>pytest --cov=secondhand</code></td><td>2132 statements，396 missed，81%</td></tr>
   <tr><td><code>python -m pylint secondhand tests</code></td><td>10.00/10（项目 <code>.pylintrc</code>）</td></tr>
-  <tr><td><code>python tools/count_loc.py</code></td><td>Python 3500 行（非空非注释）</td></tr>
+  <tr><td><code>python tools/count_loc.py</code></td><td>Python 3503 行（非空非注释）</td></tr>
 </table>
 <div class="todo">
 【本人撰写，约 180 字】挑 2–3 个关键测试写：并发预约只成功一条、幂等重复请求、违规下架联动取消、超时过期；说明测试如何证明 UML 中的规则被实现。

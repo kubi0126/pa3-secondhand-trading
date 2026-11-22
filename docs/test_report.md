@@ -28,7 +28,7 @@ python -m pylint secondhand
 # Your code has been rated at 10.00/10
 
 python tools/count_loc.py
-# Python 3500 行（非空非注释，41 个文件）
+# Python 3503 行（非空非注释，41 个文件）
 # Jinja 1044 行、CSS 496 行（不计入 1500 行门槛）
 ```
 

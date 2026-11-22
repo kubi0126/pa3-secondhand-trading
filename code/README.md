@@ -102,7 +102,7 @@ python -m pylint secondhand                        # 10.00/10（项目 .pylintrc
 python tools/count_loc.py                          # 代码规模
 ```
 
-当前统计：Python 手写代码 **3500 行**（非空非注释，41 个文件，不含测试/模板/CSS），
+当前统计：Python 手写代码 **3503 行**（非空非注释，41 个文件，不含测试/模板/CSS），
 Jinja 模板 1044 行、CSS 496 行。详细数字见 `../docs/loc_report.md`。
 
 ## 8. 常用命令
