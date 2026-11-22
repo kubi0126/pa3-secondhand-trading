@@ -1,0 +1,49 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam usecaseBackgroundColor #F7F9FC
+skinparam usecaseBorderColor #2F5597
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #2F5597
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #2F5597
+left to right direction
+
+title 图 3-1 用例图（访客与买家）
+
+actor 访客 as Guest
+actor 买家 as Buyer
+
+package "校园二手交易系统（用户端）" {
+  usecase "注册/登录" as U01
+  usecase "浏览与查询商品" as U02
+  usecase "查看商品详情" as U03
+  usecase "创建预约" as U04
+  usecase "取消预约" as U05
+  usecase "查看预约列表" as U06
+}
+
+Guest --> U01
+Guest --> U02
+Guest --> U03
+
+Buyer --> U01
+Buyer --> U02
+Buyer --> U03
+Buyer --> U04
+Buyer --> U05
+Buyer --> U06
+
+note bottom of U04
+  先到先得；同一商品同一时刻
+  仅允许一条有效预约。
+end note
+
+legend bottom
+  完整 24 个用例及需求对应关系见附录 A。
+  同一账号可同时具有买家与卖家身份。
+endlegend
+
+@enduml

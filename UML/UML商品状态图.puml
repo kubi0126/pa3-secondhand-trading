@@ -1,0 +1,52 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam stateBackgroundColor #F7F9FC
+skinparam stateBorderColor #2F5597
+skinparam arrowColor #5B6675
+
+title 图 3-5 商品状态图
+
+state "草稿" as Draft
+state "待审核" as Pending
+state "已发布" as Published
+state "已预约" as Reserved
+state "已售出" as Sold
+state "已下架" as Delisted
+state "审核驳回" as Rejected
+state "违规下架" as Violation
+
+[*] --> Draft : 创建商品
+Draft --> Pending : 提交审核 [必填完整]
+Pending --> Published : 审核通过
+Pending --> Rejected : 审核驳回 [原因必填]
+Rejected --> Pending : 修改后重新提交
+Published --> Pending : 修改标题/价格/分类 [版本一致]
+Published --> Reserved : 创建预约 [先到先得]
+Reserved --> Published : 取消/拒绝/超时
+Reserved --> Sold : 卖家标记完成 [48h 内]
+Published --> Delisted : 卖家下架 [无有效预约]
+Published --> Violation : 管理员违规下架 [原因必填]
+Reserved --> Violation : 管理员违规下架 [自动取消预约]
+Sold --> [*]
+Delisted --> [*]
+Violation --> [*]
+
+note right of Published
+  修改标题、价格或分类后需重新审核，
+  审核期间不可被预约；只改描述或图片
+  链接不触发审核。
+end note
+
+note bottom of Violation
+  违规下架为本期终态，不可重新上架。
+end note
+
+legend bottom
+  禁止转换：草稿→已预约；已售出→已发布；已下架→已预约；
+  违规下架→已发布；已预约→卖家下架。
+endlegend
+
+@enduml

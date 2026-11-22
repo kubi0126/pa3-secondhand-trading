@@ -1,0 +1,36 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam nodeBackgroundColor #F7F9FC
+skinparam nodeBorderColor #2F5597
+skinparam databaseBackgroundColor #E8EEF7
+skinparam databaseBorderColor #2F5597
+
+title 图 2-2 部署图
+
+node "用户设备" as Client {
+  node "PC 浏览器" as PC
+  node "手机浏览器" as Mobile
+}
+
+node "单机服务器" as Server {
+  node "Nginx / 静态资源" as Nginx
+  node "应用服务 JVM" as App
+  node "定时任务调度" as Scheduler
+  database "MySQL 8.0" as DB
+}
+
+PC --> Nginx : HTTPS
+Mobile --> Nginx : HTTPS
+Nginx --> App : /api 反向代理
+App --> DB : JDBC 3306
+Scheduler --> App : 触发超时扫描
+
+note right of Server
+  单机部署；数据库与应用同机；
+  图片仅保存外链，不落地存储。
+end note
+
+@enduml

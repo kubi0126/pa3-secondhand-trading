@@ -1,0 +1,37 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam sequenceLifeLineBackgroundColor #F7F9FC
+skinparam sequenceLifeLineBorderColor #2F5597
+skinparam participantBackgroundColor #F7F9FC
+skinparam participantBorderColor #2F5597
+autonumber
+
+title 图 3-11 时序图（违规下架：事务联动）
+
+participant "Audit" as Audit
+participant "ItemRepo" as ItemRepo
+participant "ResRepo" as ResRepo
+participant "Log" as Log
+database "MySQL" as DB
+
+Audit -> DB : BEGIN
+Audit -> ResRepo : findActiveByItem(itemId)
+ResRepo --> Audit : 有效预约 / 无
+alt 存在有效预约
+  Audit -> ResRepo : updateStatus(已取消, 原因=商品被下架)
+  Audit -> Log : record(预约取消)
+end
+Audit -> ItemRepo : updateStatus(违规下架, version+1)
+Audit -> Log : record(违规下架)
+Audit -> DB : COMMIT
+Audit --> Audit : 返回成功
+alt 任一步失败
+  Audit -> DB : ROLLBACK
+  Audit --> Audit : 返回失败
+end
+
+@enduml

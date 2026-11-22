@@ -1,0 +1,48 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam stateBackgroundColor #F7F9FC
+skinparam stateBorderColor #2F5597
+skinparam arrowColor #5B6675
+
+title 图 3-6 预约状态图
+
+state "待确认" as Pending
+state "已确认" as Confirmed
+state "已取消" as Cancelled
+state "已拒绝" as Rejected
+state "已过期" as Expired
+state "已完成" as Completed
+
+[*] --> Pending : 创建预约 [商品已发布]
+Pending --> Confirmed : 卖家确认 [24h 内]
+Pending --> Cancelled : 买家取消
+Pending --> Cancelled : 管理员违规下架
+Pending --> Rejected : 卖家拒绝 [原因必填]
+Pending --> Expired : 24h 未确认
+Confirmed --> Completed : 卖家标记完成 [48h 内]
+Confirmed --> Cancelled : 买家取消 [假设]
+Confirmed --> Cancelled : 管理员违规下架
+Confirmed --> Expired : 48h 未完成
+Cancelled --> [*]
+Rejected --> [*]
+Expired --> [*]
+Completed --> [*]
+
+note right of Confirmed
+  商品保持已预约状态，
+  等待线下交易。
+end note
+
+note bottom of Cancelled
+  管理员违规下架时，同一事务内将有效预约置为已取消，
+  取消原因记为“商品被下架”。
+end note
+
+note bottom of Expired
+  预约过期后商品恢复为已发布。
+end note
+
+@enduml

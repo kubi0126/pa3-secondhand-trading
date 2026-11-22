@@ -1,0 +1,49 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam usecaseBackgroundColor #F7F9FC
+skinparam usecaseBorderColor #2F5597
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #2F5597
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #2F5597
+left to right direction
+
+title 图 3-2 用例图（卖家）
+
+actor 卖家 as Seller
+
+package "校园二手交易系统（卖家端）" {
+  usecase "注册/登录" as U01
+  usecase "浏览与查询商品" as U02
+  usecase "查看商品详情" as U03
+  usecase "发布/管理商品" as U04
+  usecase "处理预约" as U05
+  usecase "标记交易完成" as U06
+  usecase "查询本人商品日志" as U07
+  usecase "查看个人统计" as U08
+  usecase "查看预约列表" as U09
+}
+
+Seller --> U01
+Seller --> U02
+Seller --> U03
+Seller --> U04
+Seller --> U05
+Seller --> U06
+Seller --> U07
+Seller --> U08
+Seller --> U09
+
+note bottom of U07
+  卖家只能查询本人商品的日志。
+end note
+
+legend bottom
+  卖家与买家共用同一账号；
+  管理员不代替卖家发布或编辑商品。
+endlegend
+
+@enduml

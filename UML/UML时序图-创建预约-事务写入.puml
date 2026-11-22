@@ -1,0 +1,37 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam sequenceLifeLineBackgroundColor #F7F9FC
+skinparam sequenceLifeLineBorderColor #2F5597
+skinparam participantBackgroundColor #F7F9FC
+skinparam participantBorderColor #2F5597
+autonumber
+
+title 图 3-9 时序图（创建预约：事务写入）
+
+participant "ResSvc" as Svc
+participant "ItemRepo" as ItemRepo
+participant "ResRepo" as ResRepo
+participant "Log" as Log
+database "MySQL" as DB
+
+Svc -> DB : BEGIN
+Svc -> ResRepo : insert(待确认预约)
+Svc -> ItemRepo : updateStatus(已预约, version+1)
+ItemRepo --> Svc : 影响行数 = 1
+Svc -> Log : record(创建预约)
+Svc -> DB : COMMIT
+Svc --> Svc : 返回预约成功
+alt 唯一约束冲突或影响行数为 0
+  Svc -> DB : ROLLBACK
+  Svc --> Svc : 返回 409
+end
+note right of Svc
+  唯一索引保证并发仅 1 条成功；
+  商品更新失败时回滚预约。
+end note
+
+@enduml

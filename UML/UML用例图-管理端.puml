@@ -1,0 +1,52 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam usecaseBackgroundColor #F7F9FC
+skinparam usecaseBorderColor #2F5597
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #2F5597
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #2F5597
+left to right direction
+
+title 图 3-3 用例图（管理端）
+
+actor 管理员 as Admin
+actor "定时任务" as Scheduler
+
+package "校园二手交易系统（管理端）" {
+  usecase "登录" as U01
+  usecase "审核商品" as U02
+  usecase "违规下架" as U03
+  usecase "浏览与查询商品" as U04
+  usecase "查看商品详情" as U05
+  usecase "查询全部日志" as U06
+  usecase "查看分类统计" as U07
+  usecase "管理分类与成色字典" as U08
+  usecase "自动过期预约" as U09
+}
+
+Admin --> U01
+Admin --> U02
+Admin --> U03
+Admin --> U04
+Admin --> U05
+Admin --> U06
+Admin --> U07
+Admin --> U08
+
+Scheduler --> U09
+
+note bottom of U03
+  违规下架时在同一事务内
+  自动取消有效预约。
+end note
+
+legend bottom
+  管理员不编辑商品内容，也不代替卖家发布；
+  日志只读，保留 1 年。
+endlegend
+
+@enduml

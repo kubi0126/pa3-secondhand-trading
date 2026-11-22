@@ -1,0 +1,76 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #F7F9FC
+skinparam componentBorderColor #2F5597
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #D9E0EA
+skinparam databaseBackgroundColor #E8EEF7
+skinparam databaseBorderColor #2F5597
+
+title 图 2-1 组件图（分层架构与模块交互）
+
+package "客户端" {
+  [PC 浏览器]
+  [手机浏览器]
+}
+
+package "Web 应用（单机部署）" {
+  [Nginx / 静态资源]
+  [REST 接口层]
+
+  package "应用服务" {
+    [账号与权限服务]
+    [商品服务]
+    [审核服务]
+    [查询服务]
+    [预约交易服务]
+    [日志统计服务]
+  }
+
+  [领域状态机]
+  [数据访问层]
+  [定时任务]
+}
+
+database "MySQL 8.0" as DB
+
+[PC 浏览器] --> [Nginx / 静态资源] : HTTPS
+[手机浏览器] --> [Nginx / 静态资源] : HTTPS
+[Nginx / 静态资源] --> [REST 接口层] : /api
+
+[REST 接口层] --> [账号与权限服务]
+[REST 接口层] --> [商品服务]
+[REST 接口层] --> [审核服务]
+[REST 接口层] --> [查询服务]
+[REST 接口层] --> [预约交易服务]
+[REST 接口层] --> [日志统计服务]
+
+[商品服务] --> [领域状态机]
+[审核服务] --> [领域状态机]
+[预约交易服务] --> [领域状态机]
+
+[账号与权限服务] --> [数据访问层]
+[商品服务] --> [数据访问层]
+[审核服务] --> [数据访问层]
+[查询服务] --> [数据访问层]
+[预约交易服务] --> [数据访问层]
+[日志统计服务] --> [数据访问层]
+
+[数据访问层] --> DB : JDBC
+[定时任务] --> [预约交易服务] : 超时扫描
+
+note right of [日志统计服务]
+  关键写操作在同一事务内
+  写入操作日志。
+end note
+
+note bottom of [数据访问层]
+  事务边界：创建/取消/确认/完成/违规下架
+  同时更新商品、预约与日志。
+end note
+
+@enduml

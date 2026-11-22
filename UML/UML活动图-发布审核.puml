@@ -1,0 +1,53 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam activityBackgroundColor #F7F9FC
+skinparam activityBorderColor #2F5597
+skinparam activityDiamondBackgroundColor #FFFFFF
+skinparam activityDiamondBorderColor #2F5597
+skinparam arrowColor #5B6675
+
+title 图 3-7 活动图（商品发布与审核）
+
+|卖家|
+start
+:填写商品信息;
+:保存草稿;
+repeat
+  :提交审核;
+  |系统|
+  :校验必填项、价格与图片链接;
+  while (校验未通过?) is (是)
+    |卖家|
+    :修改商品信息;
+    |系统|
+    :重新校验;
+  endwhile (通过)
+  :商品状态置为待审核;
+  :写入操作日志;
+  |管理员|
+  :查看待审核商品;
+  if (审核结果?) then (通过)
+    |系统|
+    :商品状态置为已发布;
+    :记录发布时间、审核记录与日志;
+    |卖家|
+    :商品在买家列表中可见;
+    stop
+  else (驳回)
+    |管理员|
+    :填写驳回原因;
+    |系统|
+    :商品状态置为审核驳回;
+    :写入审核记录与日志;
+    |卖家|
+    :修改商品信息;
+  endif
+repeat while (重新提交?) is (是)
+|卖家|
+:保持审核驳回，稍后再提交;
+stop
+
+@enduml

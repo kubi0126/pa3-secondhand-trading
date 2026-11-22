@@ -1,0 +1,107 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #2F5597
+skinparam classHeaderBackgroundColor #E8EEF7
+skinparam packageBackgroundColor #F7F9FC
+skinparam packageBorderColor #D9E0EA
+hide empty members
+
+title 图 3-4 类图（领域模型）
+
+package "实体" as EntityPkg {
+  class User {
+    - userId: Long
+    - username: String
+    - phone: String
+    - role: Role
+    + canLogin(now: DateTime): boolean
+  }
+
+  class Category {
+    - categoryId: Long
+    - name: String
+  }
+
+  class ItemCondition {
+    - conditionId: Long
+    - name: String
+  }
+
+  class Item {
+    - itemId: Long
+    - sellerId: Long
+    - categoryId: Long
+    - conditionId: Long
+    - title: String
+    - price: Decimal
+    - status: ItemStatus
+    - version: int
+    + submitForReview(): void
+    + approve(): void
+    + reject(reason: String): void
+    + reserve(): void
+    + release(): void
+    + sell(): void
+    + delist(): void
+    + violationDelist(): void
+  }
+
+  class Reservation {
+    - reservationId: Long
+    - itemId: Long
+    - buyerId: Long
+    - status: ReservationStatus
+    - version: int
+    - expireAt: DateTime
+    + confirm(): void
+    + cancel(reason: String): void
+    + reject(reason: String): void
+    + expire(): void
+    + complete(): void
+  }
+
+  class AuditRecord {
+    - auditId: Long
+    - itemId: Long
+    - adminId: Long
+    - result: AuditResult
+  }
+
+  class OperationLog {
+    - logId: Long
+    - operatorId: Long
+    - targetType: String
+    - targetId: Long
+    - action: String
+  }
+
+  class RequestLog {
+    - requestId: String
+    - userId: Long
+  }
+}
+
+User "1" -- "0..*" Item : 发布
+Category "1" -- "0..*" Item : 分类
+ItemCondition "1" -- "0..*" Item : 成色
+User "1" -- "0..*" Reservation : 买家
+Item "1" -- "0..*" Reservation : 被预约
+Item "1" -- "0..*" AuditRecord : 审核历史
+User "1" -- "0..*" AuditRecord : 审核人
+User "1" -- "0..*" OperationLog : 操作人
+User "1" -- "0..*" RequestLog : 请求人
+OperationLog ..> Item : 操作对象
+OperationLog ..> Reservation : 操作对象
+
+legend bottom
+  枚举：Role、ItemStatus（8 种）、ReservationStatus（6 种）、AuditResult。
+  完整字段见第 4 章数据设计；状态取值见 3.5、3.6 节状态图。
+  约束：同一商品有效预约不超过 1 条；商品与预约均使用 version 乐观锁；商品不物理删除。
+endlegend
+
+@enduml

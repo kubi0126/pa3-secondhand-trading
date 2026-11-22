@@ -1,0 +1,46 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam sequenceLifeLineBackgroundColor #F7F9FC
+skinparam sequenceLifeLineBorderColor #2F5597
+skinparam participantBackgroundColor #F7F9FC
+skinparam participantBorderColor #2F5597
+autonumber
+
+title 图 3-8 时序图（创建预约：幂等与前置校验）
+
+actor 买家 as Buyer
+participant "商品详情页" as Page
+participant "ResCtrl" as Ctrl
+participant "Auth" as Auth
+participant "ResSvc" as Svc
+participant "Repository" as Repo
+
+Buyer -> Page : 点击"预约"
+Page -> Ctrl : POST /api/reservations
+Ctrl -> Auth : 校验登录与角色
+Auth --> Ctrl : 已登录
+Ctrl -> Svc : create(buyerId, itemId, requestId)
+Svc -> Repo : tryInsert(requestId)
+alt requestId 已存在
+  Repo --> Svc : false
+  Svc --> Ctrl : 返回首次处理结果
+else 新请求
+  Repo --> Svc : true
+  Svc -> Repo : findById(itemId)
+  Repo --> Svc : 商品（状态=已发布）
+  Svc -> Repo : findActiveByItem(itemId)
+  Repo --> Svc : 无有效预约
+  Svc -> Svc : 校验非卖家、版本一致
+  Svc --> Ctrl : 校验通过，进入事务写入
+end
+note right of Svc
+  校验失败返回 409：
+  商品已被预约、不能预约自己的商品、
+  数据已变化，请刷新。
+end note
+
+@enduml

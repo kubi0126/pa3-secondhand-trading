@@ -1,0 +1,35 @@
+@startuml
+scale 2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam sequenceLifeLineBackgroundColor #F7F9FC
+skinparam sequenceLifeLineBorderColor #2F5597
+skinparam participantBackgroundColor #F7F9FC
+skinparam participantBorderColor #2F5597
+autonumber
+
+title 图 3-10 时序图（违规下架：权限与状态校验）
+
+actor 管理员 as Admin
+participant "后台" as AdminUI
+participant "AdminCtrl" as Ctrl
+participant "Auth" as Auth
+participant "Audit" as Audit
+participant "ItemRepo" as ItemRepo
+
+Admin -> AdminUI : 提交违规下架（原因、版本号）
+AdminUI -> Ctrl : POST /admin/violation-delist
+Ctrl -> Auth : 校验管理员角色
+Auth --> Ctrl : 通过
+Ctrl -> Audit : violationDelist(...)
+Audit -> ItemRepo : findById
+ItemRepo --> Audit : 商品（状态=已发布/已预约）
+alt 商品已售出
+  Audit --> Ctrl : 409 该状态不允许违规下架
+else 可下架
+  Audit --> Audit : 校验通过，进入事务联动
+end
+
+@enduml
