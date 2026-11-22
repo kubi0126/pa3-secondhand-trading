@@ -17,3 +17,6 @@ Thumbs.db
 .coverage
 coverage.xml
 htmlcov/
+
+# 课程要求原文（不作为提交物）
+实验三_软件实现与构建.pdf
