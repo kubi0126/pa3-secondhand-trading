@@ -1,0 +1,73 @@
+"""领域层导出。"""
+
+from .enums import (
+    AuditResult,
+    ItemStatus,
+    OperatorType,
+    RequestStatus,
+    ReservationStatus,
+    Role,
+)
+from .errors import (
+    AccountLocked,
+    AppError,
+    AuthError,
+    DuplicateRequest,
+    NotFound,
+    PermissionDenied,
+    StateConflict,
+    ValidationError,
+)
+from .models import (
+    AuditRecord,
+    Category,
+    Item,
+    ItemCondition,
+    OperationLog,
+    RequestLog,
+    Reservation,
+    User,
+)
+from .state_machines import (
+    ITEM_TRANSITIONS,
+    RESERVATION_TRANSITIONS,
+    assert_item_transition,
+    assert_reservation_transition,
+    can_item_transition,
+    can_reservation_transition,
+    item_next_statuses,
+    reservation_next_statuses,
+)
+
+__all__ = [
+    "AccountLocked",
+    "AppError",
+    "AuditRecord",
+    "AuditResult",
+    "AuthError",
+    "Category",
+    "DuplicateRequest",
+    "ITEM_TRANSITIONS",
+    "Item",
+    "ItemCondition",
+    "ItemStatus",
+    "NotFound",
+    "OperationLog",
+    "OperatorType",
+    "PermissionDenied",
+    "RESERVATION_TRANSITIONS",
+    "RequestLog",
+    "RequestStatus",
+    "Reservation",
+    "ReservationStatus",
+    "Role",
+    "StateConflict",
+    "User",
+    "ValidationError",
+    "assert_item_transition",
+    "assert_reservation_transition",
+    "can_item_transition",
+    "can_reservation_transition",
+    "item_next_statuses",
+    "reservation_next_statuses",
+]

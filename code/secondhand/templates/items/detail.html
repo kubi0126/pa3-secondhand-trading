@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} · 校园二手交易{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('items.index') }}">浏览商品</a><span>/</span><span>{{ item.category_name }}</span>
+</nav>
+
+<div class="detail-grid">
+  <section class="card detail-cover">
+    {% if item.image_url %}
+      <img src="{{ item.image_url }}" alt="{{ item.title }}">
+    {% else %}
+      <div class="cover-placeholder">{{ item.title[:1] }}</div>
+    {% endif %}
+  </section>
+
+  <section class="card detail-main">
+    <div class="detail-head">
+      <h1>{{ item.title }}</h1>
+      <span class="badge {{ item.status.css_class }}">{{ item.status.label }}</span>
+    </div>
+    <p class="detail-price">¥{{ item.price|money }}</p>
+    <dl class="facts">
+      <div><dt>分类</dt><dd>{{ item.category_name }}</dd></div>
+      <div><dt>成色</dt><dd>{{ item.condition_name }}</dd></div>
+      <div><dt>卖家</dt><dd>{{ item.seller_name }}</dd></div>
+      <div><dt>发布时间</dt><dd>{{ item.published_at|dt }}</dd></div>
+    </dl>
+    <div class="description">
+      <h2>商品描述</h2>
+      <p>{{ item.description or '卖家没有填写描述。' }}</p>
+    </div>
+
+    <div class="action-panel">
+      {% if item.status.value == 'PUBLISHED' %}
+        {% if can_reserve %}
+          <form method="post" action="{{ url_for('items.reserve', item_id=item.item_id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="request_id" value="{{ request_id }}">
+            <input type="hidden" name="version" value="{{ item.version }}">
+            <button class="btn btn-primary btn-lg" type="submit">发起预约</button>
+            <p class="muted small">预约后商品将锁定，卖家需在 24 小时内确认；你也可以在“我的预约”中取消。</p>
+          </form>
+        {% elif not current_user %}
+          <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login', next=request.path) }}">登录后预约</a>
+        {% elif current_user.user_id == item.seller_id %}
+          <a class="btn btn-ghost" href="{{ url_for('items.edit', item_id=item.item_id) }}">编辑商品</a>
+          <p class="muted small">这是你发布的商品，不能预约自己的商品。</p>
+        {% elif item.status.value == 'PUBLISHED' and current_user.role.value == 'ADMIN' %}
+          <p class="muted">管理员不参与购买，可在“商品处置”中执行违规下架。</p>
+        {% endif %}
+      {% elif item.status.value == 'RESERVED' %}
+        <div class="notice notice-info">
+          <strong>商品已被预约</strong>
+          {% if active_reservation %}
+            <span>当前有效预约：{{ active_reservation.buyer_name }} · {{ active_reservation.status.label }}</span>
+          {% endif %}
+          <span>其他买家暂时无法发起预约。</span>
+        </div>
+      {% elif item.status.value == 'SOLD' %}
+        <div class="notice notice-dark">该商品已完成交易，仅登录用户可查看详情。</div>
+      {% elif item.status.value in ('DRAFT', 'PENDING_REVIEW', 'REJECTED', 'DELISTED', 'VIOLATION_DELISTED') %}
+        <div class="notice notice-warning">该商品当前不在买家列表中展示，仅卖家本人和管理员可见。</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+{% if audits and (current_user and (current_user.role.value == 'ADMIN' or current_user.user_id == item.seller_id)) %}
+<section class="card section">
+  <h2>审核记录</h2>
+  <table class="table">
+    <thead><tr><th>时间</th><th>审核人</th><th>结果</th><th>原因</th></tr></thead>
+    <tbody>
+      {% for audit in audits %}
+        <tr>
+          <td>{{ audit.created_at|dt }}</td>
+          <td>{{ audit.admin_name }}</td>
+          <td><span class="badge {{ 'badge-success' if audit.result.value == 'APPROVED' else 'badge-danger' }}">{{ audit.result.label }}</span></td>
+          <td>{{ audit.reason or '—' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

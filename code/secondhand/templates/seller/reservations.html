@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% from "macros.html" import pager, empty %}
+{% block title %}预约处理 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>预约处理</h1>
+    <p class="muted">确认后请在 48 小时内完成线下交易；超时未处理会被系统置为已过期。</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('seller.my_items') }}">我的商品</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><span>待确认</span><strong>{{ stats.pending_confirm }}</strong></div>
+  <div class="stat-card"><span>进行中预约</span><strong>{{ stats.active_reservations }}</strong></div>
+  <div class="stat-card"><span>在售商品</span><strong>{{ stats.published }}</strong></div>
+  <div class="stat-card"><span>已售出</span><strong>{{ stats.sold }}</strong></div>
+</div>
+
+<div class="card">
+  <div class="tabs">
+    {% set tabs = [('PENDING_CONFIRM', '待确认'), ('CONFIRMED', '已确认'), ('COMPLETED', '已完成'), ('CANCELLED', '已取消'), ('REJECTED', '已拒绝'), ('EXPIRED', '已过期'), ('ALL', '全部')] %}
+    {% for value, label in tabs %}
+      <a class="tab {{ 'active' if (status or 'ALL') == value }}"
+         href="{{ url_for('seller.reservations', status=value) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if reservations %}
+  <div class="reservation-list">
+    {% for reservation in reservations %}
+    <article class="card reservation-card">
+      <div class="reservation-head">
+        <div>
+          <a class="table-title" href="{{ url_for('items.detail', item_id=reservation.item_id) }}">{{ reservation.item_title }}</a>
+          <p class="muted small">买家 {{ reservation.buyer_name }} · 预约于 {{ reservation.created_at|dt }}</p>
+        </div>
+        <span class="badge {{ reservation.status.css_class }}">{{ reservation.status.label }}</span>
+      </div>
+      <dl class="facts inline-facts">
+        <div><dt>商品价格</dt><dd class="price">¥{{ reservation.item_price|money }}</dd></div>
+        <div><dt>截止时间</dt><dd>{{ reservation.expire_at|dt }} <span class="muted small">（{{ reservation.expire_at|remaining }}）</span></dd></div>
+        <div><dt>预约编号</dt><dd>#{{ reservation.reservation_id }}</dd></div>
+      </dl>
+      {% if reservation.cancel_reason %}
+        <p class="muted small">说明：{{ reservation.cancel_reason }}</p>
+      {% endif %}
+
+      <div class="reservation-actions">
+        {% if reservation.status.value == 'PENDING_CONFIRM' %}
+          <form method="post" action="{{ url_for('seller.confirm', reservation_id=reservation.reservation_id) }}" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="version" value="{{ reservation.version }}">
+            <input type="hidden" name="back" value="{{ request.full_path }}">
+            <button class="btn btn-primary btn-sm" type="submit">确认预约</button>
+          </form>
+          <details class="inline-details">
+            <summary class="btn btn-ghost btn-sm">拒绝预约</summary>
+            <form method="post" action="{{ url_for('seller.reject', reservation_id=reservation.reservation_id) }}" class="popover-form">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <input type="hidden" name="version" value="{{ reservation.version }}">
+              <input type="hidden" name="back" value="{{ request.full_path }}">
+              <label class="field">
+                <span>拒绝原因 <em class="required">*</em></span>
+                <textarea name="reason" rows="2" maxlength="200" required placeholder="例如：已经线下卖出"></textarea>
+              </label>
+              <button class="btn btn-danger btn-sm" type="submit">确认拒绝</button>
+            </form>
+          </details>
+        {% elif reservation.status.value == 'CONFIRMED' %}
+          <form method="post" action="{{ url_for('seller.complete', reservation_id=reservation.reservation_id) }}" class="inline"
+                onsubmit="return confirm('确认已完成线下交易？商品将标记为已售出，操作不可撤销。')">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="version" value="{{ reservation.version }}">
+            <input type="hidden" name="back" value="{{ request.full_path }}">
+            <button class="btn btn-primary btn-sm" type="submit">标记交易完成</button>
+          </form>
+          <span class="muted small">请在确认后 48 小时内完成；超时预约会自动过期。</span>
+        {% else %}
+          <span class="muted small">该预约已结束，无需操作。</span>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {{ pager(page) }}
+  {% else %}
+    {{ empty('当前分类下没有预约', '切换上方标签查看其他状态') }}
+  {% endif %}
+</div>
+{% endblock %}

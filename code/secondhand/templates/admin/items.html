@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "macros.html" import pager, empty %}
+{% block title %}商品处置 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>商品处置</h1>
+    <p class="muted">管理员可对已发布或已预约的违规商品执行下架；有效预约会联动取消。</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.review') }}">审核工作台</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filter-bar">
+    <label class="field">
+      <span>状态</span>
+      <select name="status">
+        <option value="">全部（除草稿）</option>
+        {% for value, label in [('PENDING_REVIEW', '待审核'), ('PUBLISHED', '已发布'), ('RESERVED', '已预约'), ('SOLD', '已售出'), ('REJECTED', '审核驳回'), ('DELISTED', '已下架'), ('VIOLATION_DELISTED', '违规下架')] %}
+          <option value="{{ value }}" {{ 'selected' if status == value }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field grow">
+      <span>标题关键词</span>
+      <input name="q" value="{{ keyword }}" placeholder="输入商品标题">
+    </label>
+    <button class="btn btn-primary btn-sm" type="submit">查询</button>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.items') }}">重置</a>
+  </form>
+
+  {% if items %}
+  <table class="table">
+    <thead>
+      <tr><th>商品</th><th>卖家</th><th>状态</th><th>价格</th><th>更新时间</th><th class="right">操作</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          <a class="table-title" href="{{ url_for('items.detail', item_id=item.item_id) }}">{{ item.title }}</a>
+          <div class="muted small">{{ item.category_name }} · {{ item.condition_name }}</div>
+        </td>
+        <td>{{ item.seller_name }}</td>
+        <td><span class="badge {{ item.status.css_class }}">{{ item.status.label }}</span></td>
+        <td class="price">¥{{ item.price|money }}</td>
+        <td>{{ item.updated_at|dt }}</td>
+        <td class="right actions">
+          {% if item.status.value in ('PUBLISHED', 'RESERVED') %}
+            <details class="inline-details">
+              <summary class="btn btn-danger btn-sm">违规下架</summary>
+              <form method="post" action="{{ url_for('admin.violation', item_id=item.item_id) }}" class="popover-form">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                <label class="field">
+                  <span>下架原因 <em class="required">*</em></span>
+                  <textarea name="reason" rows="2" maxlength="200" required placeholder="例如：疑似假冒品牌，请提供购买凭证"></textarea>
+                </label>
+                <p class="muted small">若存在有效预约，将同时取消并通知买家。</p>
+                <button class="btn btn-danger btn-sm" type="submit">确认下架</button>
+              </form>
+            </details>
+          {% else %}
+            <span class="muted small">不可下架</span>
+          {% endif %}
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('items.detail', item_id=item.item_id) }}">详情</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ pager(page) }}
+  {% else %}
+    {{ empty('没有匹配的商品', '调整筛选条件试试') }}
+  {% endif %}
+</div>
+{% endblock %}

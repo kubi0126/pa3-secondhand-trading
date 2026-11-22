@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}统计面板 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>统计面板</h1>
+    <p class="muted">统计口径为当前状态实时计算，与商品列表一致。</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.logs') }}">查看操作日志</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><span>注册用户</span><strong>{{ totals.users }}</strong><small>普通用户 {{ totals.normal_users }} · 管理员 {{ totals.admins }}</small></div>
+  <div class="stat-card"><span>商品总数</span><strong>{{ totals.total_items }}</strong><small>不含已删除（本期无物理删除）</small></div>
+  <div class="stat-card"><span>在售</span><strong>{{ totals.published }}</strong><small>已发布</small></div>
+  <div class="stat-card"><span>已预约</span><strong>{{ totals.reserved }}</strong><small>进行中 {{ totals.active_reservations }} 条预约</small></div>
+  <div class="stat-card"><span>已售出</span><strong>{{ totals.sold }}</strong><small>线下交易完成</small></div>
+  <div class="stat-card"><span>待审核</span><strong>{{ totals.pending_review }}</strong><small>等待管理员处理</small></div>
+</div>
+
+<div class="card section">
+  <h2>分类统计</h2>
+  {% set peak = (categories|map(attribute='published')|max) or 1 %}
+  <table class="table">
+    <thead><tr><th>分类</th><th>已发布</th><th>已预约</th><th>已售出</th><th>全部</th><th class="bar-col">在售占比</th></tr></thead>
+    <tbody>
+      {% for row in categories %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td>{{ row.published }}</td>
+        <td>{{ row.reserved }}</td>
+        <td>{{ row.sold }}</td>
+        <td>{{ row.total }}</td>
+        <td class="bar-col">
+          <div class="bar"><span style="width: {{ (row.published / peak * 100)|round(1) }}%"></span></div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card section">
+  <h2>口径说明</h2>
+  <ul class="plain-list">
+    <li>“在售”只统计状态为已发布的商品；已预约、已售出不计入。</li>
+    <li>“进行中预约”包含待确认与已确认两种状态。</li>
+    <li>卖家个人统计在“我的商品”页面展示，只统计本人商品。</li>
+    <li>数据量增大后可增加汇总表，当前按索引实时计算。</li>
+  </ul>
+</div>
+{% endblock %}

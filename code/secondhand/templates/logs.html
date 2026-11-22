@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "macros.html" import pager, empty %}
+{% block title %}操作日志 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ '我的商品日志' if scope == 'seller' else '操作日志' }}</h1>
+    <p class="muted">
+      {% if scope == 'seller' %}只显示与你商品相关的关键操作，日志只读。{% else %}全量关键操作，日志只读；保留 1 年。{% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" class="filter-bar">
+    <label class="field">
+      <span>操作类型</span>
+      <select name="action">
+        <option value="">全部</option>
+        {% for value, label in actions %}
+          <option value="{{ value }}" {{ 'selected' if filters.get('action') == value }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field">
+      <span>对象类型</span>
+      <select name="target_type">
+        <option value="">全部</option>
+        <option value="ITEM" {{ 'selected' if filters.get('target_type') == 'ITEM' }}>商品</option>
+        <option value="RESERVATION" {{ 'selected' if filters.get('target_type') == 'RESERVATION' }}>预约</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>开始日期</span>
+      <input type="date" name="date_from" value="{{ filters.get('date_from', '') }}">
+    </label>
+    <label class="field">
+      <span>结束日期</span>
+      <input type="date" name="date_to" value="{{ filters.get('date_to', '') }}">
+    </label>
+    <button class="btn btn-primary btn-sm" type="submit">查询</button>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('seller.logs') if scope == 'seller' else url_for('admin.logs') }}">重置</a>
+  </form>
+
+  {% if logs %}
+  <table class="table">
+    <thead>
+      <tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>结果</th><th>详情</th></tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td class="nowrap">{{ log.created_at|dt }}</td>
+        <td>{{ log.operator_name or '系统任务' }}</td>
+        <td>{{ log_action_labels.get(log.action, log.action) }}</td>
+        <td>
+          {% if log.target_type == 'ITEM' and log.item_title %}
+            <a class="table-title" href="{{ url_for('items.detail', item_id=log.target_id) }}">{{ log.item_title }}</a>
+          {% elif log.target_type == 'RESERVATION' %}
+            {{ log.item_title or '预约' }} <span class="muted small">#{{ log.target_id }}</span>
+          {% else %}
+            #{{ log.target_id }}
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge {{ 'badge-success' if log.result == 'SUCCESS' else 'badge-danger' }}">{{ '成功' if log.result == 'SUCCESS' else '失败' }}</span>
+        </td>
+        <td class="muted small">{{ log.detail or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ pager(page) }}
+  {% else %}
+    {{ empty('没有符合条件的日志', '调整时间或操作类型试试') }}
+  {% endif %}
+</div>
+{% endblock %}

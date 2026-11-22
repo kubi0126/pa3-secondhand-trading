@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}注册 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="auth-shell">
+  <section class="card auth-card">
+    <h1>注册</h1>
+    <p class="muted">一个账号同时具备买家与卖家身份，注册后即可发布和预约商品。</p>
+    <form method="post" class="form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label class="field">
+        <span>用户名</span>
+        <input name="username" value="{{ form.get('username', '') }}" required
+               minlength="3" maxlength="32" autocomplete="username">
+        <small>3-32 位中文、字母、数字或下划线</small>
+      </label>
+      <label class="field">
+        <span>手机号</span>
+        <input name="phone" value="{{ form.get('phone', '') }}" required
+               pattern="1[0-9]{10}" autocomplete="tel">
+        <small>11 位手机号，用于登录与唯一性校验</small>
+      </label>
+      <label class="field">
+        <span>昵称（可选）</span>
+        <input name="nickname" value="{{ form.get('nickname', '') }}" maxlength="32">
+      </label>
+      <label class="field">
+        <span>密码</span>
+        <input type="password" name="password" required minlength="8" maxlength="64"
+               autocomplete="new-password">
+        <small>8-64 位，需同时包含字母和数字</small>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">创建账号</button>
+    </form>
+    <p class="auth-switch">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p>
+  </section>
+  <aside class="card demo-card">
+    <h2>注册规则</h2>
+    <ul class="plain-list">
+      <li>用户名、手机号全局唯一，重复注册会被拒绝。</li>
+      <li>密码使用 bcrypt 加盐哈希存储，不保存明文。</li>
+      <li>管理员账号不开放注册，由部署初始化。</li>
+      <li>管理员不参与商品发布与购买。</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}

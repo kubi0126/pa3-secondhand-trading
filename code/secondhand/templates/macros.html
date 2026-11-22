@@ -1,0 +1,27 @@
+{% macro pager(page) %}
+{% if page.pages > 1 %}
+<nav class="pager" aria-label="分页">
+  {% if page.has_prev %}
+    <a class="btn btn-ghost btn-sm" href="{{ page_url(page.page - 1) }}">上一页</a>
+  {% else %}
+    <span class="btn btn-ghost btn-sm disabled">上一页</span>
+  {% endif %}
+  <span class="pager-info">第 {{ page.page }} / {{ page.pages }} 页 · 共 {{ page.total }} 条</span>
+  {% if page.has_next %}
+    <a class="btn btn-ghost btn-sm" href="{{ page_url(page.page + 1) }}">下一页</a>
+  {% else %}
+    <span class="btn btn-ghost btn-sm disabled">下一页</span>
+  {% endif %}
+</nav>
+{% elif page.total > 0 %}
+<div class="pager"><span class="pager-info">共 {{ page.total }} 条</span></div>
+{% endif %}
+{% endmacro %}
+
+{% macro empty(text, hint='') %}
+<div class="empty">
+  <div class="empty-mark">□</div>
+  <p>{{ text }}</p>
+  {% if hint %}<span>{{ hint }}</span>{% endif %}
+</div>
+{% endmacro %}

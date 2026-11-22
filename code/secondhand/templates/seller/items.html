@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "macros.html" import pager, empty %}
+{% block title %}我的商品 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>我的商品</h1>
+    <p class="muted">管理草稿、审核状态与在售商品；已预约商品需先处理预约。</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('items.new') }}">发布商品</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><span>在售</span><strong>{{ stats.published }}</strong></div>
+  <div class="stat-card"><span>已预约</span><strong>{{ stats.reserved }}</strong></div>
+  <div class="stat-card"><span>已售出</span><strong>{{ stats.sold }}</strong></div>
+  <div class="stat-card"><span>草稿</span><strong>{{ stats.draft }}</strong></div>
+  <div class="stat-card"><span>待审核</span><strong>{{ stats.pending_review }}</strong></div>
+  <div class="stat-card"><span>进行中预约</span><strong>{{ stats.active_reservations }}</strong></div>
+</div>
+
+<div class="card">
+  <div class="tabs">
+    {% set tabs = [('', '全部'), ('DRAFT', '草稿'), ('PENDING_REVIEW', '待审核'), ('PUBLISHED', '已发布'), ('RESERVED', '已预约'), ('SOLD', '已售出'), ('REJECTED', '审核驳回'), ('DELISTED', '已下架'), ('VIOLATION_DELISTED', '违规下架')] %}
+    {% for value, label in tabs %}
+      <a class="tab {{ 'active' if (status or '') == value }}"
+         href="{{ url_for('seller.my_items', status=value) if value else url_for('seller.my_items') }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if items %}
+  <table class="table">
+    <thead>
+      <tr><th>商品</th><th>状态</th><th>价格</th><th>更新时间</th><th class="right">操作</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          <a class="table-title" href="{{ url_for('items.detail', item_id=item.item_id) }}">{{ item.title }}</a>
+          <div class="muted small">{{ item.category_name }} · {{ item.condition_name }}</div>
+        </td>
+        <td><span class="badge {{ item.status.css_class }}">{{ item.status.label }}</span></td>
+        <td class="price">¥{{ item.price|money }}</td>
+        <td>{{ item.updated_at|dt }}</td>
+        <td class="right actions">
+          {% if item.status.value in ('DRAFT', 'REJECTED') %}
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('items.edit', item_id=item.item_id) }}">编辑</a>
+            <form method="post" action="{{ url_for('items.submit', item_id=item.item_id) }}" class="inline">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <input type="hidden" name="version" value="{{ item.version }}">
+              <button class="btn btn-primary btn-sm" type="submit">提交审核</button>
+            </form>
+          {% elif item.status.value == 'PUBLISHED' %}
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('items.edit', item_id=item.item_id) }}">编辑</a>
+            <form method="post" action="{{ url_for('items.delist', item_id=item.item_id) }}" class="inline"
+                  onsubmit="return confirm('确认下架该商品？下架后本期不能重新上架。')">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <input type="hidden" name="version" value="{{ item.version }}">
+              <button class="btn btn-danger btn-sm" type="submit">下架</button>
+            </form>
+          {% elif item.status.value == 'RESERVED' %}
+            <span class="muted small">已预约，暂不可编辑</span>
+          {% else %}
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('items.detail', item_id=item.item_id) }}">查看</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ pager(page) }}
+  {% else %}
+    {{ empty('这里还没有商品', '点击右上角“发布商品”创建第一件商品') }}
+  {% endif %}
+</div>
+{% endblock %}

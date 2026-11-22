@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}请求无法完成 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="error-shell card">
+  <span class="error-code">{{ status_code or error.status_code or 500 }}</span>
+  <h1>请求无法完成</h1>
+  <p>{{ error.message }}</p>
+  <div class="error-actions">
+    <a class="btn btn-primary" href="{{ url_for('items.index') }}">返回商品列表</a>
+    {% if status_code == 401 or error.status_code == 401 %}
+      <a class="btn btn-ghost" href="{{ url_for('auth.login', next=request.path) }}">去登录</a>
+    {% endif %}
+    <button class="btn btn-ghost" type="button" onclick="history.back()">返回上一页</button>
+  </div>
+</div>
+{% endblock %}

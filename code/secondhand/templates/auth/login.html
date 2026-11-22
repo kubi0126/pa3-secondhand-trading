@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}登录 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="auth-shell">
+  <section class="card auth-card">
+    <h1>登录</h1>
+    <p class="muted">买家与卖家共用同一账号；管理员账号由部署时初始化。</p>
+    <form method="post" class="form" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label class="field">
+        <span>用户名或手机号</span>
+        <input name="login" value="{{ login }}" autocomplete="username" required autofocus>
+      </label>
+      <label class="field">
+        <span>密码</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">登录</button>
+    </form>
+    <p class="auth-switch">还没有账号？<a href="{{ url_for('auth.register') }}">注册</a></p>
+  </section>
+  <aside class="card demo-card">
+    <h2>演示账号</h2>
+    <table class="table compact">
+      <tbody>
+        <tr><th>管理员</th><td>admin / Admin@123</td></tr>
+        <tr><th>卖家</th><td>alice / User@123</td></tr>
+        <tr><th>买家</th><td>bob / User@123</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">连续输错密码 5 次会锁定账号 15 分钟；登录失败提示不区分用户名是否存在。</p>
+  </aside>
+</div>
+{% endblock %}

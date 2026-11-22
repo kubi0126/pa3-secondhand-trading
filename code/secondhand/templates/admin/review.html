@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "macros.html" import pager, empty %}
+{% block title %}审核工作台 · 校园二手交易{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>审核工作台</h1>
+    <p class="muted">按提交时间从早到晚处理；驳回必须填写原因，商品会回到卖家可修改状态。</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.items') }}">商品处置</a>
+</div>
+
+{% if items %}
+<div class="review-list">
+  {% for item in items %}
+  <article class="card review-card">
+    <div class="review-cover">
+      {% if item.image_url %}
+        <img src="{{ item.image_url }}" alt="{{ item.title }}">
+      {% else %}
+        <span>{{ item.title[:1] }}</span>
+      {% endif %}
+    </div>
+    <div class="review-body">
+      <div class="review-head">
+        <div>
+          <a class="table-title" href="{{ url_for('items.detail', item_id=item.item_id) }}">{{ item.title }}</a>
+          <p class="muted small">{{ item.category_name }} · {{ item.condition_name }} · 卖家 {{ item.seller_name }}</p>
+        </div>
+        <span class="price">¥{{ item.price|money }}</span>
+      </div>
+      <p class="review-desc">{{ item.description or '（无描述）' }}</p>
+      <p class="muted small">提交时间 {{ item.updated_at|dt }} · 版本 v{{ item.version }}</p>
+      <div class="review-actions">
+        <form method="post" action="{{ url_for('admin.approve', item_id=item.item_id) }}" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <input type="hidden" name="version" value="{{ item.version }}">
+          <button class="btn btn-primary btn-sm" type="submit">审核通过</button>
+        </form>
+        <details class="inline-details">
+          <summary class="btn btn-danger btn-sm">审核驳回</summary>
+          <form method="post" action="{{ url_for('admin.reject', item_id=item.item_id) }}" class="popover-form">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="version" value="{{ item.version }}">
+            <label class="field">
+              <span>驳回原因 <em class="required">*</em></span>
+              <textarea name="reason" rows="2" maxlength="200" required placeholder="例如：图片与描述不符，请补充实拍图"></textarea>
+            </label>
+            <button class="btn btn-danger btn-sm" type="submit">确认驳回</button>
+          </form>
+        </details>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('items.detail', item_id=item.item_id) }}">查看详情</a>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{{ pager(page) }}
+{% else %}
+  {{ empty('审核队列已清空', '卖家提交审核后，商品会出现在这里') }}
+{% endif %}
+{% endblock %}

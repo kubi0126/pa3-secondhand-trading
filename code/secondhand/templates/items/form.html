@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ '发布商品' if action == 'new' else '编辑商品' }} · 校园二手交易{% endblock %}
+{% block content %}
+{% set selected_category = (form.get('category_id')|int) if form.get('category_id') else (item.category_id if item else 0) %}
+{% set selected_condition = (form.get('condition_id')|int) if form.get('condition_id') else (item.condition_id if item else 0) %}
+<div class="page-head">
+  <div>
+    <h1>{{ '发布商品' if action == 'new' else '编辑商品' }}</h1>
+    <p class="muted">保存草稿不会进入买家列表；提交审核后由管理员处理。</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('seller.my_items') }}">返回我的商品</a>
+</div>
+
+<div class="form-layout">
+  <section class="card">
+    <form method="post" class="form"
+          action="{{ url_for('items.new') if action == 'new' else url_for('items.edit', item_id=item.item_id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if item %}<input type="hidden" name="version" value="{{ item.version }}">{% endif %}
+
+      <label class="field">
+        <span>标题 <em class="required">*</em></span>
+        <input name="title" maxlength="60" required
+               value="{{ form.get('title', item.title if item else '') }}">
+        <small>一句话说明物品名称与型号，最多 60 字</small>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>分类 <em class="required">*</em></span>
+          <select name="category_id" required>
+            <option value="">请选择</option>
+            {% for category in categories %}
+              <option value="{{ category.category_id }}"
+                {{ 'selected' if selected_category == category.category_id }}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="field">
+          <span>成色 <em class="required">*</em></span>
+          <select name="condition_id" required>
+            <option value="">请选择</option>
+            {% for condition in conditions %}
+              <option value="{{ condition.condition_id }}"
+                {{ 'selected' if selected_condition == condition.condition_id }}>{{ condition.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>价格（元） <em class="required">*</em></span>
+          <input name="price" type="number" min="0.01" step="0.01" required
+                 value="{{ form.get('price', item.price if item else '') }}">
+          <small>必须大于 0，最多两位小数</small>
+        </label>
+        <label class="field">
+          <span>图片外链（可选）</span>
+          <input name="image_url" maxlength="512"
+                 value="{{ form.get('image_url', item.image_url if item and item.image_url else '') }}"
+                 placeholder="https://...">
+          <small>本期只保存外链，不提供图片上传</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>描述</span>
+        <textarea name="description" rows="6" maxlength="2000"
+                  placeholder="使用情况、瑕疵、配件、交易地点等">{{ form.get('description', item.description if item and item.description else '') }}</textarea>
+        <small>最多 2000 字；修改描述或图片不会触发重新审核</small>
+      </label>
+
+      {% if item and item.status.value == 'PUBLISHED' %}
+        <div class="notice notice-warning">
+          修改标题、价格或分类后，商品会回到“待审核”并暂时从买家列表移除；只改描述或图片不影响上架状态。
+        </div>
+      {% endif %}
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" type="submit" name="action" value="save">保存草稿</button>
+        <button class="btn btn-primary" type="submit" name="action" value="submit">提交审核</button>
+      </div>
+    </form>
+  </section>
+
+  <aside class="card tips">
+    <h2>发布提示</h2>
+    <ul class="plain-list">
+      <li>标题、分类、成色、价格为必填项，缺失时不能保存。</li>
+      <li>草稿只有卖家本人可见，可反复修改。</li>
+      <li>提交审核后商品状态为“待审核”，审核期间不能被预约。</li>
+      <li>审核驳回后可按原因修改，再次提交。</li>
+      <li>已下架、违规下架为终态，本期不能重新上架。</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}
