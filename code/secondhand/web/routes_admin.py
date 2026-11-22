@@ -81,7 +81,7 @@ def items():
 def violation(item_id: int):
     try:
         AuditService(get_db()).violation_delist(
-            _admin_id(), item_id, request.form.get("reason", "")
+            _admin_id(), item_id, request.form.get("reason", ""), _version()
         )
         flash("已违规下架，相关预约已联动取消", "success")
     except AppError as exc:

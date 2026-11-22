@@ -51,6 +51,7 @@
               <summary class="btn btn-danger btn-sm">违规下架</summary>
               <form method="post" action="{{ url_for('admin.violation', item_id=item.item_id) }}" class="popover-form">
                 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                <input type="hidden" name="version" value="{{ item.version }}">
                 <label class="field">
                   <span>下架原因 <em class="required">*</em></span>
                   <textarea name="reason" rows="2" maxlength="200" required placeholder="例如：疑似假冒品牌，请提供购买凭证"></textarea>

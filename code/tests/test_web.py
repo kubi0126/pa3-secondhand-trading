@@ -121,10 +121,11 @@ def test_admin_violation_via_web(client, db, alice_id, bob_id, make_published_it
     reservation_id = ReservationService(db).create(
         bob_id, item_id, "web-violation", item.version
     )
+    item = ItemRepository(db).find_by_id(item_id)
     _login(client, "admin", "Admin@123")
     response = client.post(
         f"/admin/items/{item_id}/violation",
-        data={"reason": "网页违规测试"},
+        data={"reason": "网页违规测试", "version": str(item.version)},
         follow_redirects=True,
     )
     assert response.status_code == 200

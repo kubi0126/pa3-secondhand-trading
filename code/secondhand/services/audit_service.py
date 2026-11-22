@@ -79,7 +79,8 @@ class AuditService:
                 detail=f"审核驳回：{cleaned}",
             )
 
-    def violation_delist(self, admin_id: int, item_id: int, reason: str) -> None:
+    def violation_delist(self, admin_id: int, item_id: int, reason: str,
+                         expected_version: int | None = None) -> None:
         """违规下架：取消有效预约、商品终态、两条日志在同一事务内完成。"""
 
         cleaned = text(reason, "下架原因", max_len=200)
@@ -88,6 +89,8 @@ class AuditService:
             raise NotFound("商品不存在")
         if item.status not in {ItemStatus.PUBLISHED, ItemStatus.RESERVED}:
             raise StateConflict(f"商品当前为“{item.status.label}”，不能违规下架")
+        if expected_version is not None and expected_version != item.version:
+            raise StateConflict("数据已变化，请刷新后重试")
         assert_item_transition(item.status, ItemStatus.VIOLATION_DELISTED)
 
         with transaction() as connection:
