@@ -23,7 +23,7 @@
 | 15-数据字典.png | `/admin/dict` | 分类/成色启停与新增 |
 | 16-移动端-商品列表.png | `/` | 390×844 窄屏 |
 | 17-移动端-商品详情.png | `/items/2` | 390×844 窄屏 |
-| 18-GitHub仓库首页.png | GitHub | Public、main、文件列表 |
+| 18-GitHub仓库首页.png | GitHub | Public、main、文件列表（最新 UI 提交） |
 | 19-GitHub提交记录.png | GitHub | 4 次主要提交 |
 
 复现截图需先启动服务：

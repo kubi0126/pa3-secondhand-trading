@@ -1,14 +1,14 @@
 # 测试与代码质量报告
 
-日期：2026-11-22
-被测版本：`code/`（Git 提交见仓库）
+日期：2026-11-24
+被测版本：`code/`（Git `c4c9cb3`）
 
 ## 1. 环境
 
 | 项 | 版本 |
 |---|---|
 | 操作系统 | Windows 11 |
-| Python | 3.13.14 |
+| Python | 3.12.6 |
 | Flask | 3.1.3 |
 | pytest | 9.2.0 |
 | bcrypt | 4.x（cost=12；测试环境 cost=4） |
@@ -19,17 +19,17 @@
 ```bash
 cd code
 python -m pytest -q
-# 75 passed in 8.58s
+# 75 passed in 5.57s
 
 python -m pytest --cov=secondhand --cov-report=term-missing
-# TOTAL 2132 statements, 396 missed, 81%
+# TOTAL 2134 statements, 397 missed, 81%
 
-python -m pylint secondhand
+python -m pylint secondhand tests
 # Your code has been rated at 10.00/10
 
 python tools/count_loc.py
 # Python 3503 行（非空非注释，41 个文件）
-# Jinja 1044 行、CSS 496 行（不计入 1500 行门槛）
+# Jinja 1045 行、CSS 496 行（不计入 1500 行门槛）
 ```
 
 ## 3. 测试分布
