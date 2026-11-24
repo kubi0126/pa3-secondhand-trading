@@ -60,4 +60,4 @@ python tools/count_loc.py
 └── code/           # 源码（不含 var/、__pycache__、测试缓存）
 ```
 
-详见 `report/report_outline.md` 的提交前检查清单。
+提交前检查清单随报告源保存在本地，不纳入 Git。
