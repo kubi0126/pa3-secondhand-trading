@@ -109,14 +109,6 @@ class ReservationService:
                     raise NotFound("商品不存在")
                 if item.seller_id == buyer_id:
                     raise PermissionDenied("不能预约自己发布的商品")
-                if item.status is ItemStatus.RESERVED:
-                    raise StateConflict("商品已被预约")
-                if item.status is not ItemStatus.PUBLISHED:
-                    raise StateConflict(f"商品当前为“{item.status.label}”，不能预约")
-                version = item.version if expected_version is None else expected_version
-                if version != item.version:
-                    raise StateConflict("数据已变化，请刷新后重试")
-
                 reservation_repo = ReservationRepository(connection)
                 since = fmt(seconds_later(now(), -self.duplicate_seconds))
                 recent = reservation_repo.find_recent_by_buyer_item(
@@ -126,7 +118,15 @@ class ReservationService:
                     RequestRepository(connection).mark_success(
                         request_id, json.dumps({"reservation_id": recent.reservation_id})
                     )
-                    raise _AlreadyProcessed(recent.reservation_id)
+                    return recent.reservation_id
+
+                if item.status is ItemStatus.RESERVED:
+                    raise StateConflict("商品已被预约")
+                if item.status is not ItemStatus.PUBLISHED:
+                    raise StateConflict(f"商品当前为“{item.status.label}”，不能预约")
+                version = item.version if expected_version is None else expected_version
+                if version != item.version:
+                    raise StateConflict("数据已变化，请刷新后重试")
 
                 active = reservation_repo.find_active_by_item(item_id)
                 if active is not None:

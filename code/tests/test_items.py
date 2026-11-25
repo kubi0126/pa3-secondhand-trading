@@ -137,7 +137,7 @@ def test_visibility_rules(db, alice_id, bob_id, make_published_item):
 
 def test_invalid_price_and_url(db, alice_id):
     service = ItemService(db)
-    for price in ("0", "-1", "abc"):
+    for price in ("0", "-1", "abc", "nan", "inf", "-inf"):
         with pytest.raises(ValidationError):
             service.create_draft(alice_id, _input("价格测试", price))
     with pytest.raises(ValidationError):

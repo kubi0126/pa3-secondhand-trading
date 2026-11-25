@@ -77,11 +77,13 @@ class ReservationRepository:
 
     def find_recent_by_buyer_item(self, buyer_id: int, item_id: int,
                                   since: str) -> Reservation | None:
+        """60 秒内仍有效的预约；已取消/已拒绝/已完成不算重复。"""
         row = fetch_one(
             self.connection,
             RESERVATION_SELECT
             + """
               WHERE r.buyer_id = ? AND r.item_id = ? AND r.created_at >= ?
+                AND r.status IN ('PENDING_CONFIRM', 'CONFIRMED')
               ORDER BY r.created_at DESC
               LIMIT 1
             """,

@@ -34,7 +34,7 @@ code/
 │   ├── web/                   # 应用工厂、蓝图、CSRF、登录装饰器
 │   ├── templates/             # Jinja 页面
 │   └── static/css/app.css     # 设计系统
-├── tests/                     # 75 个单元/集成/并发测试
+├── tests/                     # 137 个单元/集成/并发测试
 ├── tools/count_loc.py         # 源代码规模统计
 ├── requirements.txt
 ├── pyproject.toml
@@ -96,13 +96,13 @@ python -m secondhand            # 或 flask --app app run
 ## 7. 测试与代码质量
 
 ```bash
-python -m pytest -q                                # 75 passed
+python -m pytest -q                                # 137 passed
 python -m pytest --cov=secondhand --cov-report=term-missing
 python -m pylint secondhand                        # 10.00/10（项目 .pylintrc）
 python tools/count_loc.py                          # 代码规模
 ```
 
-当前统计：Python 手写代码 **3503 行**（非空非注释，41 个文件，不含测试/模板/CSS），
+当前统计：Python 手写代码 **3508 行**（非空非注释，41 个文件，不含测试/模板/CSS），
 Jinja 模板 1045 行、CSS 496 行。详细数字见 `../docs/loc_report.md`。
 
 ## 8. 常用命令

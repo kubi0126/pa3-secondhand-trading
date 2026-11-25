@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -134,6 +135,8 @@ def money(value: Any) -> float:
         amount = round(float(value), 2)
     except (TypeError, ValueError) as exc:
         raise ValidationError("价格必须是数字") from exc
+    if not math.isfinite(amount):
+        raise ValidationError("价格必须是有限数字")
     if amount <= 0:
         raise ValidationError("价格必须大于 0")
     if amount > 9_999_999.99:

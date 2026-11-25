@@ -9,6 +9,7 @@ from secondhand.domain.errors import PermissionDenied, StateConflict
 from secondhand.repositories.item_repo import ItemRepository
 from secondhand.repositories.log_repo import LogAction
 from secondhand.repositories.reservation_repo import ReservationRepository
+from secondhand.repositories.request_repo import RequestRepository
 from secondhand.services.audit_service import AuditService
 from secondhand.services.reservation_service import ReservationService
 from secondhand.utils import fmt, hours_later, now
@@ -55,6 +56,47 @@ def test_cancel_releases_item(db, alice_id, bob_id, make_published_item):
     ReservationService(db).cancel(bob_id, reservation_id, reservation.version)
     assert ReservationService(db).get(reservation_id).status is ReservationStatus.CANCELLED
     assert ItemRepository(db).find_by_id(item_id).status is ItemStatus.PUBLISHED
+
+
+def test_cancel_then_rebook_creates_new_reservation(db, alice_id, bob_id,
+                                                   make_published_item):
+    item_id = make_published_item(alice_id, "取消后重约")
+    old_id = _create(db, bob_id, item_id, "cancel-rebook-old")
+    old = ReservationService(db).get(old_id)
+    ReservationService(db).cancel(bob_id, old_id, old.version)
+
+    new_id = _create(db, bob_id, item_id, "cancel-rebook-new")
+    new = ReservationService(db).get(new_id)
+    assert new_id != old_id
+    assert new.status is ReservationStatus.PENDING_CONFIRM
+    assert ItemRepository(db).find_by_id(item_id).status is ItemStatus.RESERVED
+
+
+def test_reject_then_rebook_creates_new_reservation(db, alice_id, bob_id,
+                                                   make_published_item):
+    item_id = make_published_item(alice_id, "拒绝后重约")
+    old_id = _create(db, bob_id, item_id, "reject-rebook-old")
+    old = ReservationService(db).get(old_id)
+    ReservationService(db).reject(alice_id, old_id, "已经卖出", old.version)
+
+    new_id = _create(db, bob_id, item_id, "reject-rebook-new")
+    new = ReservationService(db).get(new_id)
+    assert new_id != old_id
+    assert new.status is ReservationStatus.PENDING_CONFIRM
+    assert ItemRepository(db).find_by_id(item_id).status is ItemStatus.RESERVED
+
+
+def test_recent_active_duplicate_returns_same_and_marks_request(db, alice_id, bob_id,
+                                                                make_published_item):
+    item_id = make_published_item(alice_id, "活跃重复预约")
+    first = _create(db, bob_id, item_id, "active-dup-first")
+    second = _create(db, bob_id, item_id, "active-dup-second")
+
+    assert second == first
+    request = RequestRepository(db).find("active-dup-second")
+    assert request is not None
+    assert request.status == "SUCCESS"
+    assert str(first) in (request.result_json or "")
 
 
 def test_reject_requires_reason_and_releases(db, alice_id, bob_id, make_published_item):

@@ -1,7 +1,7 @@
 # 测试与代码质量报告
 
-日期：2026-11-24
-被测版本：`code/`（Git `c4c9cb3`）
+日期：2026-11-25
+被测版本：`code/`（Git HEAD 见仓库）
 
 ## 1. 环境
 
@@ -19,16 +19,16 @@
 ```bash
 cd code
 python -m pytest -q
-# 75 passed in 5.57s
+# 137 passed in 5.29s
 
 python -m pytest --cov=secondhand --cov-report=term-missing
-# TOTAL 2134 statements, 397 missed, 81%
+# TOTAL 2137 statements, 395 missed, 82%
 
 python -m pylint secondhand tests
 # Your code has been rated at 10.00/10
 
 python tools/count_loc.py
-# Python 3503 行（非空非注释，41 个文件）
+# Python 3508 行（非空非注释，41 个文件）
 # Jinja 1045 行、CSS 496 行（不计入 1500 行门槛）
 ```
 
@@ -36,13 +36,13 @@ python tools/count_loc.py
 
 | 文件 | 用例数（含参数化） | 覆盖内容 |
 |---|---:|---|
-| `test_state_machines.py` | 29 | 商品 11 条允许/7 条禁止、预约 7 条允许/4 条禁止转换 |
+| `test_state_machines.py` | 88 | 商品 56 个有序对（11 合法/45 非法）、预约 30 个有序对（7 合法/23 非法） |
 | `test_auth.py` | 12 | 注册、重复用户名/手机号、格式校验、bcrypt、5 次锁定、成功重置 |
 | `test_items.py` | 9 | 草稿→提交→审核、改价重审、只改描述、旧版本冲突、下架限制、可见性、非法价格/URL |
-| `test_reservations.py` | 9 | 创建锁定、幂等、取消/拒绝释放、确认+完成、权限、超时过期、违规联动 |
+| `test_reservations.py` | 12 | 创建锁定、幂等、取消/拒绝释放、取消/拒绝后重约、确认+完成、权限、超时过期、违规联动 |
 | `test_concurrency.py` | 2 | 两买家并发预约仅 1 条成功；同 request_id 并发仅 1 条记录 |
 | `test_web.py` | 14 | 页面渲染、角色拦截、CSRF、表单创建、草稿越权、404 |
-| **合计** | **75** | |
+| **合计** | **137** | |
 
 ## 4. 重点场景与断言
 
@@ -60,9 +60,9 @@ python tools/count_loc.py
 
 ## 5. 覆盖率说明
 
-- 总覆盖率 81%。未覆盖部分主要是：`__main__`/`scheduler` 的进程入口、
+- 总覆盖率 82%。未覆盖部分主要是：`__main__`/`scheduler` 的进程入口、
   CLI 命令、管理员字典的增删启停、部分路由的异常分支。
-- 核心业务（状态机、预约、审核、商品、账号）覆盖率均在 79%–100%。
+- 核心业务（状态机、预约、审核、商品、账号）覆盖率均在 80%–100%。
 - 前端模板与 CSS 不计入 Python 覆盖率。
 
 ## 6. 代码风格
@@ -75,7 +75,14 @@ python tools/count_loc.py
 - 命名与分层：路由只做参数解析与跳转，业务规则在 `services/`，SQL 在 `repositories/`，
   状态规则在 `domain/state_machines.py`。
 
-## 7. 未覆盖/待补
+## 7. 复查修复
+
+- 取消/拒绝后重约：60 秒重复查询只匹配 `PENDING_CONFIRM`/`CONFIRMED`，已取消、已拒绝不再算重复。
+- 幂等命中回写：`mark_success` 改为在事务内正常返回，`request_log` 的 SUCCESS 不再被回滚。
+- NaN/Inf 价格：`money()` 增加 `math.isfinite` 检查，`nan`/`inf` 返回 `ValidationError`。
+- 状态机：商品 56 个有序对、预约 30 个有序对全枚举；商品 11 合法/45 非法，预约 7 合法/23 非法。
+
+## 8. 未覆盖/待补
 
 - 10 万商品、50 并发的压测未执行；当前只验证了并发正确性，未验证 P95 指标。
 - 日志 1 年保留的归档任务未实现；`request_log` 提供 7 天清理命令。
